@@ -35,6 +35,7 @@ void toggleLED(int LEDPin) {
 
 void loop(){
   EthernetClient client = server.available(); // CRIA UMA VARIÁVEL CHAMADA client
+  
   if (client) { //SE EXISTE CLIENTE
     while (client.connected()) { // ENQUANTO  EXISTIR CLIENTE CONECTADO
     if (client.available()) { // SE EXISTIR CLIENTE HABILITADO
@@ -45,7 +46,7 @@ void loop(){
         readString += caractere; // "readstring" VAI RECEBER OS CARACTERES LIDO
       }
       if (caractere == '\n') { // SE ENCONTRAR "\n" É O FINAL DO CABEÇALHO DA REQUISIÇÃO HTTP
-        if (readString.indexOf("?") <0) //SE ENCONTRAR O CARACTER "?"
+        if (readString.indexOf("?") <0) //SE NÃO ENCONTRAR O CARACTER "?"
         {
         }
         else // SENÃO
@@ -55,7 +56,7 @@ void loop(){
           pinLed = readString.substring(posInterrogacao+1, posIgual);
           statusLed = readString.substring(posIgual+1, posEspaco);
           
-          if(statusLed == "true"){ // SE ENCONTRAR O PARÂMETRO "L=1"
+          if(statusLed == "true"){ // SE ENCONTRAR O PARÂMETRO "TRUE"
             digitalWrite(pinLed.toInt(), HIGH); // ENERGIZA A PORTA "ledPin" 
             Serial.print("PinLed: ");
             Serial.println(pinLed);            
@@ -67,16 +68,19 @@ void loop(){
           }
 
           Serial.print("Recebi: ");
-  Serial.println(readString);
-
-  
-
-  Serial.print("statusLed: ");
-  Serial.println(statusLed);
+          Serial.println(readString);
+          Serial.print("statusLed: ");
+          Serial.println(statusLed);
         
           readString="";
+          client.println("HTTP/1.1 200 OK"); // ESCREVE PARA O CLIENTE A VERSÃO DO HTTP
+          client.println("Content-Type: text/html"); // ESCREVE PARA O CLIENTE O TIPO DE CONTEÚDO(texto/html)
+          client.println();
           client.stop(); // FINALIZA A REQUISIÇÃO HTTP
-        }
+        }else
+          client.println("HTTP/1.1 400 Bad Request"); // ESCREVE PARA O CLIENTE A VERSÃO DO HTTP
+          client.println("Content-Type: text/html"); // ESCREVE PARA O CLIENTE O TIPO DE CONTEÚDO(texto/html)
+          client.println();
       }
     }
   }
